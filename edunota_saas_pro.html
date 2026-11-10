@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNota SaaS | Plataforma Académica Avanzada</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebfe',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px -5px rgba(99, 102, 241, 0.15);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-900 text-slate-100 font-sans antialiased flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Global Toast / Notification -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-200%] transition-transform duration-300 bg-slate-950 text-white border border-slate-800 px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-cyan-400"></i>
+        <span id="toast-message">Notificación del sistema</span>
+    </div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between py-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl hero-gradient flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg text-white tracking-tight leading-tight flex items-center space-x-2">
+                        <span>EduNota</span>
+                        <span class="text-[10px] hero-gradient text-white px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm">SaaS Pro</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Calculadoras EBAU, Universidades de España & Asistente TFG</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 mr-2 bg-emerald-400 rounded-full animate-pulse"></span> Servidor Activo (España)
+                </span>
+                <button onclick="openModalPro()" class="hero-gradient text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-brand-500/20 hover:opacity-90 transition">
+                    <i class="fa-solid fa-crown mr-1.5 text-amber-300"></i> Versión Pro
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 justify-center sm:justify-start mb-8 border-b border-slate-800 pb-4">
+            <button onclick="switchTab('ebau')" id="btn-tab-ebau" class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center space-x-2.5 hero-gradient text-white shadow-lg shadow-brand-500/25">
+                <i class="fa-solid fa-bullseye"></i>
+                <span>Calculadora EBAU & Universidades</span>
+            </button>
+            <button onclick="switchTab('uni')" id="btn-tab-uni" class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center space-x-2.5 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Previsión Universitaria</span>
+            </button>
+            <button onclick="switchTab('ia')" id="btn-tab-ia" class="tab-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center space-x-2.5 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">
+                <i class="fa-solid fa-robot"></i>
+                <span>Tests IA & Asistente TFG</span>
+            </button>
+        </div>
+
+        <!-- ================= TAB 1: EBAU & UNIVERSIDADES ESPAÑA ================= -->
+        <section id="content-ebau" class="tab-content grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Form Card -->
+            <div class="lg:col-span-5 bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-calculator text-cyan-400"></i>
+                        <span>Cálculo de Nota de Acceso EBAU</span>
+                    </h2>
+                    <button onclick="resetEbauForm()" class="text-xs text-slate-400 hover:text-cyan-400 transition">Reiniciar</button>
+                </div>
+
+                <form id="ebau-form" class="space-y-4" onsubmit="event.preventDefault(); calcularEbau();">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nota Media de Bachillerato (NCO - máx 10)</label>
+                        <input type="number" step="0.01" min="0" max="10" id="ebau-nco" value="8.65" required
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Fase Obligatoria EBAU (CF - máx 10)</label>
+                        <input type="number" step="0.01" min="0" max="10" id="ebau-cf" value="8.20" required
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-white">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Materia Voluntaria 1</label>
+                            <input type="number" step="0.01" min="0" max="10" id="ebau-m1" value="9.25" required
+                                class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-white mb-2">
+                            <label class="block text-[11px] text-slate-400 mb-1">Ponderación M1</label>
+                            <select id="ebau-p1" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="0.2">0.2 (Específica / Mayor peso)</option>
+                                <option value="0.1">0.1 (Menor peso)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Materia Voluntaria 2</label>
+                            <input type="number" step="0.01" min="0" max="10" id="ebau-m2" value="8.50" required
+                                class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-white mb-2">
+                            <label class="block text-[11px] text-slate-400 mb-1">Ponderación M2</label>
+                            <select id="ebau-p2" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="0.2">0.2 (Específica / Mayor peso)</option>
+                                <option value="0.1">0.1 (Menor peso)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full mt-6 py-3.5 px-6 rounded-xl hero-gradient hover:opacity-95 text-white font-bold text-sm shadow-xl shadow-brand-500/25 transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span>Calcular Nota y Consultar Universidades</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results & Nationwide Universities Explorer -->
+            <div class="lg:col-span-7 flex flex-col space-y-6">
+                <!-- Score Card -->
+                <div class="hero-gradient text-white rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute -right-8 -bottom-8 text-white/10 text-9xl font-extrabold pointer-events-none">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold uppercase tracking-widest text-cyan-200">Nota Final de Acceso EBAU</span>
+                            <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">Oficial España</span>
+                        </div>
+                        <div class="flex items-baseline space-x-3 mt-3">
+                            <span id="ebau-score-display" class="text-5xl sm:text-6xl font-black tracking-tight">12.950</span>
+                            <span class="text-cyan-100 font-semibold">/ 14.000 max</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-cyan-100/90 mt-4 pt-4 border-t border-white/20 flex items-center">
+                        <i class="fa-solid fa-circle-info mr-2"></i> Fórmula: 0.60·NCO + 0.40·CF + P1·M1 + P2·M2
+                    </p>
+                </div>
+
+                <!-- Database Explorer (All Spain Universities) -->
+                <div class="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 shadow-xl flex-grow flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-700">
+                        <div>
+                            <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-earth-europe text-cyan-400"></i>
+                                <span>Buscador Nacional de Universidades & Grados</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Todas las comunidades autónomas y principales universidades públicas.</p>
+                        </div>
+                        <span id="ebau-match-count" class="text-xs bg-brand-500/20 text-cyan-300 border border-brand-500/30 px-3 py-1 rounded-full font-bold self-start sm:self-auto">0 accesibles</span>
+                    </div>
+
+                    <!-- Filter Search Bar -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="filter-search" oninput="filtrarGrados()" placeholder="Filtrar por grado o universidad..." 
+                                class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div>
+                            <select id="filter-rama" onchange="filtrarGrados()" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="TODAS">Todas las ramas de conocimiento</option>
+                                <option value="Ingeniería y Arquitectura">Ingeniería y Arquitectura</option>
+                                <option value="Ciencias de la Salud">Ciencias de la Salud</option>
+                                <option value="Ciencias">Ciencias</option>
+                                <option value="Ciencias Sociales y Jurídicas">Ciencias Sociales y Jurídicas</option>
+                                <option value="Artes y Humanidades">Artes y Humanidades</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Degrees Scroll List -->
+                    <div id="ebau-degrees-list" class="space-y-2.5 overflow-y-auto max-h-[340px] pr-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: PREVISIÓN UNIVERSITARIA ================= -->
+        <section id="content-uni" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Final Exam Calculator -->
+            <div class="lg:col-span-6 bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 sm:p-8 shadow-xl">
+                <h2 class="text-base font-bold text-white mb-6 flex items-center space-x-2">
+                    <i class="fa-solid fa-bullseye text-cyan-400"></i>
+                    <span>¿Qué nota necesito en el Examen Final?</span>
+                </h2>
+
+                <form id="uni-form" class="space-y-4" onsubmit="event.preventDefault(); calcularUniFinal();">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nota acumulada actual (sobre 10)</label>
+                        <input type="number" step="0.01" min="0" max="10" id="uni-current-grade" value="6.75" required
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Porcentaje ya evaluado (%)</label>
+                        <input type="number" step="1" min="0" max="99" id="uni-current-weight" value="40" required
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nota mínima deseada en el acta</label>
+                        <input type="number" step="0.01" min="0" max="10" id="uni-target-grade" value="5.00" required
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Peso del examen final (%)</label>
+                        <input type="number" step="1" min="1" max="100" id="uni-final-weight" value="60" required
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <button type="submit" class="w-full mt-6 py-3.5 px-6 rounded-xl hero-gradient hover:opacity-95 text-white font-bold text-sm shadow-xl shadow-brand-500/25 transition duration-200 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span>Calcular Nota Requerida en el Final</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right: Result & Cuatrimester Weighted Average Simulator -->
+            <div class="lg:col-span-6 flex flex-col space-y-6">
+                <div class="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-8 shadow-xl text-center flex flex-col justify-center items-center">
+                    <div class="w-14 h-14 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-xl mb-4 border border-cyan-500/20">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nota exacta en el Examen Final</h3>
+                    <div id="uni-result-value" class="text-5xl font-black text-white mb-3">3.80 / 10</div>
+                    <p id="uni-result-desc" class="text-xs text-slate-300 max-w-sm leading-relaxed">
+                        Necesitas sacar un 3.80 en tu examen final (60%) para alcanzar tu objetivo de 5.00 en la asignatura.
+                    </p>
+                </div>
+
+                <!-- Cuatrimester Simulator -->
+                <div class="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 shadow-xl">
+                    <h3 class="font-bold text-white text-sm mb-3 flex items-center justify-between">
+                        <span>Simulador de Media Cuatrimestral (Créditos ECTS)</span>
+                        <button onclick="agregarAsignaturaSimulacion()" class="text-xs bg-slate-700 hover:bg-slate-600 text-cyan-400 px-2.5 py-1 rounded-lg transition">+ Añadir asignatura</button>
+                    </h3>
+                    <div id="simulador-asignaturas" class="space-y-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" placeholder="Asignatura (ej. Cálculo I)" value="Cálculo I" class="flex-grow px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                            <input type="number" step="0.1" placeholder="Nota" value="7.5" class="w-20 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                            <input type="number" placeholder="Créditos" value="6" class="w-20 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" placeholder="Asignatura (ej. Álgebra)" value="Álgebra" class="flex-grow px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                            <input type="number" step="0.1" placeholder="Nota" value="8.0" class="w-20 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                            <input type="number" placeholder="Créditos" value="6" class="w-20 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                        </div>
+                    </div>
+                    <button onclick="calcularMediaPonderada()" class="w-full py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs transition">
+                        Calcular Media Ponderada por Créditos ECTS
+                    </button>
+                    <div id="media-ponderada-res" class="mt-3 text-center text-xs font-bold text-cyan-400">Media Ponderada Cuatrimestre: --</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: TESTS IA & ASISTENTE TFG ================= -->
+        <section id="content-ia" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Panel: Mode Selector & Inputs -->
+            <div class="lg:col-span-6 bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 sm:p-8 shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-700">
+                    <h2 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-robot text-cyan-400"></i>
+                        <span>Centro de Inteligencia Académica</span>
+                    </h2>
+                </div>
+
+                <!-- Sub-tabs for AI -->
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <button onclick="switchAiMode('test')" id="btn-mode-test" class="py-2.5 px-4 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-md">
+                        <i class="fa-solid fa-clipboard-question mr-1.5"></i> Generador de Tests
+                    </button>
+                    <button onclick="switchAiMode('tfg')" id="btn-mode-tfg" class="py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 border border-slate-700 hover:text-white">
+                        <i class="fa-solid fa-graduation-cap mr-1.5"></i> Asistente Avanzado TFG
+                    </button>
+                </div>
+
+                <!-- TEST GENERATOR MODE -->
+                <div id="ai-mode-test" class="space-y-4 flex-grow flex flex-col">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Pega tus apuntes o resumen de estudio</label>
+                        <textarea id="ia-notes-input" rows="5" 
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-brand-500 leading-relaxed"
+                            placeholder="Introduce el texto de tu lección...">El aprendizaje automático (Machine Learning) se divide principalmente en aprendizaje supervisado, no supervisado y por refuerzo. En el supervisado se entrena con etiquetas conocidas como clasificación y regresión.</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Dificultad</label>
+                            <select id="ia-difficulty" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                                <option value="universitaria">Universitaria / Avanzada</option>
+                                <option value="media">Bachillerato / EBAU</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Nº Preguntas</label>
+                            <select id="ia-num-q" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                                <option value="3">3 Preguntas</option>
+                                <option value="5">5 Preguntas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="generarTestIA()" class="w-full py-3.5 px-6 rounded-xl hero-gradient hover:opacity-95 text-white font-bold text-sm shadow-xl shadow-brand-500/25 transition duration-200 flex items-center justify-center space-x-2 mt-auto">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Generar Test con Corrección</span>
+                    </button>
+                </div>
+
+                <!-- TFG ASSISTANT MODE -->
+                <div id="ai-mode-tfg" class="space-y-4 flex-grow flex flex-col hidden">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Título o Tema del TFG</label>
+                        <input type="text" id="tfg-title-input" value="Predicción de Churn en Clientes mediante Machine Learning" 
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Rama de Conocimiento</label>
+                        <select id="tfg-rama-input" class="w-full px-3 py-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+                            <option value="data">Data Science / Ingeniería Informática</option>
+                            <option value="sociales">Ciencias Sociales y ADE</option>
+                            <option value="salud">Ciencias de la Salud / Biomédica</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <button onclick="generarTfgEstructura()" class="w-full py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs transition flex items-center justify-between">
+                            <span><i class="fa-solid fa-sitemap mr-2 text-cyan-400"></i> Generar Estructura de Capítulos</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                        <button onclick="generarTfgMetodologia()" class="w-full py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs transition flex items-center justify-between">
+                            <span><i class="fa-solid fa-flask mr-2 text-cyan-400"></i> Metodología y Análisis de Datos</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                        <button onclick="generarTfgDefensa()" class="w-full py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs transition flex items-center justify-between">
+                            <span><i class="fa-solid fa-comments mr-2 text-cyan-400"></i> Preguntas Clave del Tribunal y Defensa</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                        <button onclick="generarTfgCronograma()" class="w-full py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs transition flex items-center justify-between">
+                            <span><i class="fa-solid fa-calendar-days mr-2 text-cyan-400"></i> Cronograma Temporal (Mes a Mes)</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output Workspace -->
+            <div class="lg:col-span-6 bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-6 sm:p-8 shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-700">
+                    <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-file-lines text-cyan-400"></i>
+                        <span id="output-title-label">Resultados del Asistente</span>
+                    </h3>
+                    <div class="flex space-x-2">
+                        <button onclick="copiarResultado()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold transition">
+                            <i class="fa-solid fa-copy mr-1"></i> Copiar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="ai-output-container" class="space-y-4 overflow-y-auto max-h-[460px] pr-2 flex-grow text-xs leading-relaxed text-slate-300">
+                    <div class="text-center py-20 text-slate-500">
+                        <i class="fa-solid fa-atom text-4xl mb-3 text-cyan-400/40"></i>
+                        <p class="font-medium">Tu contenido generado aparecerá aquí de forma instantánea.</p>
+                        <p class="text-[11px] mt-1 text-slate-500">Utiliza el generador de tests o las herramientas avanzadas de TFG.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PRO Version Modal -->
+    <div id="modal-pro" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">
+            <button onclick="closeModalPro()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-sm">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center">
+                <div class="w-12 h-12 hero-gradient rounded-2xl mx-auto flex items-center justify-center text-white text-xl mb-4 shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid fa-crown text-amber-300"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-1">EduNota PRO SaaS</h3>
+                <p class="text-xs text-slate-400 mb-6">Desbloquea el acceso ilimitado a notas de corte en tiempo real, exportación PDF de tests y asistencia ilimitada por IA para tu TFG.</p>
+                <div class="bg-slate-800 rounded-2xl p-4 mb-6 border border-slate-700 text-left space-y-2.5 text-xs text-slate-300">
+                    <div class="flex items-center"><i class="fa-solid fa-check text-cyan-400 mr-2"></i> Base de datos completa 50+ universidades</div>
+                    <div class="flex items-center"><i class="fa-solid fa-check text-cyan-400 mr-2"></i> Generador de tests ilimitado por IA</div>
+                    <div class="flex items-center"><i class="fa-solid fa-check text-cyan-400 mr-2"></i> Exportación de TFG a Word / PDF</div>
+                </div>
+                <button onclick="closeModalPro(); showToast('¡Suscripción PRO activada en modo demo gratuita!');" class="w-full py-3 rounded-xl hero-gradient text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition">
+                    Activar Plan Pro (Acceso Gratuito Estudiantil)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 space-y-3 sm:space-y-0">
+            <p>&copy; 2026 EduNota SaaS Pro. Todos los derechos reservados.</p>
+            <div class="flex space-x-6">
+                <span class="hover:text-slate-300 transition cursor-pointer">Privacidad</span>
+                <span class="hover:text-slate-300 transition cursor-pointer">Términos del Servicio</span>
+                <span class="hover:text-slate-300 transition cursor-pointer">Soporte Técnico</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // Expanded Nationwide University Database
+        const UNIVERSIDADES_ESPANA = [
+            // Universitat Politècnica de València (UPV)
+            { universidad: "Universitat Politècnica de València (UPV)", nombre: "Grado en Ingeniería Informática", corte: 11.820, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universitat Politècnica de València (UPV)", nombre: "Grado en Ciencia de Datos", corte: 12.450, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universitat Politècnica de València (UPV)", nombre: "Grado en Ingeniería Biomédica", corte: 12.900, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universitat Politècnica de València (UPV)", nombre: "Grado en Ing. de Tecnologías y Serv. Telecomunicación", corte: 10.350, rama: "Ingeniería y Arquitectura" },
+            
+            // Universitat de València (UV)
+            { universidad: "Universitat de València (UV)", nombre: "Grado en Medicina", corte: 13.250, rama: "Ciencias de la Salud" },
+            { universidad: "Universitat de València (UV)", nombre: "Grado en Matemáticas", corte: 12.100, rama: "Ciencias" },
+            { universidad: "Universitat de València (UV)", nombre: "Grado en Física", corte: 11.950, rama: "Ciencias" },
+            { universidad: "Universitat de València (UV)", nombre: "Grado en Administración y Dirección de Empresas", corte: 8.500, rama: "Ciencias Sociales y Jurídicas" },
+            { universidad: "Universitat de València (UV)", nombre: "Grado en Derecho", corte: 8.100, rama: "Ciencias Sociales y Jurídicas" },
+
+            // Universitat d'Alacant (UA)
+            { universidad: "Universitat d'Alacant (UA)", nombre: "Grado en Ingeniería Informática", corte: 9.850, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universitat d'Alacant (UA)", nombre: "Grado en Enfermería", corte: 11.400, rama: "Ciencias de la Salud" },
+            { universidad: "Universitat d'Alacant (UA)", nombre: "Grado en Publicidad y Relaciones Públicas", corte: 8.900, rama: "Artes y Humanidades" },
+
+            // Universidad Politécnica de Madrid (UPM)
+            { universidad: "Universidad Politécnica de Madrid (UPM)", nombre: "Grado en Ing. Informática", corte: 12.300, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universidad Politécnica de Madrid (UPM)", nombre: "Grado en Ing. Aeroespacial", corte: 13.120, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universidad Politécnica de Madrid (UPM)", nombre: "Grado en Ing. de Telecomunicación", corte: 11.500, rama: "Ingeniería y Arquitectura" },
+
+            // Universidad Complutense de Madrid (UCM)
+            { universidad: "Universidad Complutense de Madrid (UCM)", nombre: "Grado en Medicina", corte: 13.400, rama: "Ciencias de la Salud" },
+            { universidad: "Universidad Complutense de Madrid (UCM)", nombre: "Grado en Periodismo", corte: 9.200, rama: "Artes y Humanidades" },
+            { universidad: "Universidad Complutense de Madrid (UCM)", nombre: "Grado en Psicología", corte: 11.200, rama: "Ciencias de la Salud" },
+
+            // Universitat de Barcelona (UB)
+            { universidad: "Universitat de Barcelona (UB)", nombre: "Grado en Medicina", corte: 13.150, rama: "Ciencias de la Salud" },
+            { universidad: "Universitat de Barcelona (UB)", nombre: "Grado en Biología", corte: 10.800, rama: "Ciencias" },
+            { universidad: "Universitat de Barcelona (UB)", nombre: "Grado en Economía", corte: 10.100, rama: "Ciencias Sociales y Jurídicas" },
+
+            // Universitat Autònoma de Barcelona (UAB)
+            { universidad: "Universitat Autònoma de Barcelona (UAB)", nombre: "Grado en Veterinaria", corte: 11.750, rama: "Ciencias de la Salud" },
+            { universidad: "Universitat Autònoma de Barcelona (UAB)", nombre: "Grado en Ciencia Política y de la Administración", corte: 9.400, rama: "Ciencias Sociales y Jurídicas" },
+
+            // Universidad de Sevilla (US)
+            { universidad: "Universidad de Sevilla (US)", nombre: "Grado en Ing. de Tecnologías de Telecomunicación", corte: 10.400, rama: "Ingeniería y Arquitectura" },
+            { universidad: "Universidad de Sevilla (US)", nombre: "Grado en Fisioterapia", corte: 12.100, rama: "Ciencias de la Salud" },
+
+            // Universidad de Granada (UGR)
+            { universidad: "Universidad de Granada (UGR)", nombre: "Grado en Traducción e Interpretación", corte: 11.900, rama: "Artes y Humanidades" },
+            { universidad: "Universidad de Granada (UGR)", nombre: "Grado en Ing. Informática", corte: 10.950, rama: "Ingeniería y Arquitectura" },
+
+            // Universidad de Salamanca (USAL)
+            { universidad: "Universidad de Salamanca (USAL)", nombre: "Grado en Criminología", corte: 9.800, rama: "Ciencias Sociales y Jurídicas" },
+
+            // Universidad de Zaragoza (UNIZAR)
+            { universidad: "Universidad de Zaragoza (UNIZAR)", nombre: "Grado en Ingeniería Mecánica", corte: 9.900, rama: "Ingeniería y Arquitectura" },
+
+            // Universidad de Málaga (UMA)
+            { universidad: "Universidad de Málaga (UMA)", nombre: "Grado en Ing. de la Salud", corte: 11.600, rama: "Ingeniería y Arquitectura" }
+        ];
+
+        let globalNotaEbauCalculada = 12.950;
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('hero-gradient', 'text-white', 'shadow-lg', 'shadow-brand-500/25');
+                el.classList.add('bg-slate-800', 'text-slate-300', 'hover:bg-slate-700', 'border', 'border-slate-700');
+            });
+
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-tab-' + tabId);
+            activeBtn.classList.remove('bg-slate-800', 'text-slate-300', 'hover:bg-slate-700', 'border', 'border-slate-700');
+            activeBtn.classList.add('hero-gradient', 'text-white', 'shadow-lg', 'shadow-brand-500/25');
+        }
+
+        // Toast Notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            const iconEl = document.getElementById('toast-icon');
+
+            msgEl.textContent = message;
+            if (isError) {
+                iconEl.className = 'fa-solid fa-circle-exclamation text-rose-400';
+            } else {
+                iconEl.className = 'fa-solid fa-circle-check text-cyan-400';
+            }
+
+            toast.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-200%)';
+            }, 3500);
+        }
+
+        // Modal Pro
+        function openModalPro() {
+            document.getElementById('modal-pro').classList.remove('hidden');
+        }
+        function closeModalPro() {
+            document.getElementById('modal-pro').classList.add('hidden');
+        }
+
+        // EBAU Calculator
+        function calcularEbau() {
+            try {
+                const nco = parseFloat(document.getElementById('ebau-nco').value);
+                const cf = parseFloat(document.getElementById('ebau-cf').value);
+                const m1 = parseFloat(document.getElementById('ebau-m1').value);
+                const p1 = parseFloat(document.getElementById('ebau-p1').value);
+                const m2 = parseFloat(document.getElementById('ebau-m2').value);
+                const p2 = parseFloat(document.getElementById('ebau-p2').value);
+
+                let notaFinal = (0.6 * nco) + (0.4 * cf) + (p1 * m1) + (p2 * m2);
+                notaFinal = Math.min(Math.max(notaFinal, 0), 14).toFixed(3);
+                globalNotaEbauCalculada = parseFloat(notaFinal);
+
+                document.getElementById('ebau-score-display').textContent = notaFinal;
+                filtrarGrados();
+                showToast("¡Nota EBAU calculada con éxito!");
+            } catch (err) {
+                showToast("Introduce valores numéricos válidos.", true);
+            }
+        }
+
+        function resetEbauForm() {
+            document.getElementById('ebau-nco').value = "8.65";
+            document.getElementById('ebau-cf').value = "8.20";
+            document.getElementById('ebau-m1').value = "9.25";
+            document.getElementById('ebau-m2').value = "8.50";
+            calcularEbau();
+        }
+
+        function filtrarGrados() {
+            const searchTxt = document.getElementById('filter-search').value.toLowerCase();
+            const ramaSel = document.getElementById('filter-rama').value;
+            const container = document.getElementById('ebau-degrees-list');
+            container.innerHTML = '';
+
+            let accesiblesCount = 0;
+
+            UNIVERSIDADES_ESPANA.forEach(item => {
+                const matchSearch = item.nombre.toLowerCase().includes(searchTxt) || item.universidad.toLowerCase().includes(searchTxt);
+                const matchRama = (ramaSel === 'TODAS' || item.rama === ramaSel);
+
+                if (matchSearch && matchRama) {
+                    const isApto = globalNotaEbauCalculada >= item.corte;
+                    if (isApto) accesiblesCount++;
+
+                    const div = document.createElement('div');
+                    div.className = `p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between text-xs transition gap-2 ${isApto ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200' : 'bg-slate-900/60 border-slate-800 text-slate-400'}`;
+                    div.innerHTML = `
+                        <div>
+                            <span class="font-bold text-white block">${item.nombre}</span>
+                            <span class="text-[11px] text-cyan-400/90">${item.universidad}</span>
+                            <span class="block text-[10px] text-slate-400 mt-0.5">Nota de corte oficial: ${item.corte.toFixed(3)}</span>
+                        </div>
+                        <div class="self-start sm:self-auto">
+                            ${isApto ? '<span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg border border-emerald-500/30 inline-flex items-center"><i class="fa-solid fa-check mr-1.5"></i> ¡Accesible!</span>' : '<span class="px-3 py-1 bg-slate-800 text-slate-400 rounded-lg border border-slate-700">Por debajo</span>'}
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+
+            document.getElementById('ebau-match-count').textContent = `${accesiblesCount} accesibles`;
+        }
+
+        // University Final Exam Calculator
+        function calcularUniFinal() {
+            try {
+                const currentGrade = parseFloat(document.getElementById('uni-current-grade').value);
+                const currentWeight = parseFloat(document.getElementById('uni-current-weight').value) / 100.0;
+                const targetGrade = parseFloat(document.getElementById('uni-target-grade').value);
+                const finalWeight = parseFloat(document.getElementById('uni-final-weight').value) / 100.0;
+
+                if (finalWeight <= 0) {
+                    showToast("El peso del examen final debe ser mayor que 0.", true);
+                    return;
+                }
+
+                const puntosTenidos = currentGrade * currentWeight;
+                const puntosFaltantes = targetGrade - puntosTenidos;
+                const notaNecesaria = (puntosFaltantes / finalWeight).toFixed(2);
+
+                const valueEl = document.getElementById('uni-result-value');
+                const descEl = document.getElementById('uni-result-desc');
+
+                if (notaNecesaria <= 0) {
+                    valueEl.textContent = "0.00 / 10";
+                    valueEl.className = "text-4xl font-black text-emerald-400 mb-3";
+                    descEl.textContent = "¡Felicidades! Ya tienes superada la asignatura con la nota acumulada actual.";
+                } else if (notaNecesaria > 10) {
+                    valueEl.textContent = `${notaNecesaria} / 10`;
+                    valueEl.className = "text-4xl font-black text-rose-400 mb-3";
+                    descEl.textContent = "Matemáticamente imposible llegar a ese objetivo en el examen final con los pesos actuales.";
+                } else {
+                    valueEl.textContent = `${notaNecesaria} / 10`;
+                    valueEl.className = "text-4xl font-black text-white mb-3";
+                    descEl.textContent = `Necesitas sacar un ${notaNecesaria} en el examen final (${(finalWeight*100).toFixed(0)}%) para alcanzar tu objetivo de ${targetGrade}.`;
+                }
+                showToast("Cálculo universitario completado.");
+            } catch (err) {
+                showToast("Error en los datos introducidos.", true);
+            }
+        }
+
+        function agregarAsignaturaSimulacion() {
+            const container = document.getElementById('simulador-asignaturas');
+            const row = document.createElement('div');
+            row.className = "flex items-center space-x-2";
+            row.innerHTML = `
+                <input type="text" placeholder="Asignatura" value="Física I" class="flex-grow px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                <input type="number" step="0.1" placeholder="Nota" value="8.0" class="w-20 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                <input type="number" placeholder="Créditos" value="6" class="w-20 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+            `;
+            container.appendChild(row);
+        }
+
+        function calcularMediaPonderada() {
+            const rows = document.querySelectorAll('#simulador-asignaturas > div');
+            let sumaPonderada = 0;
+            let totalCreditos = 0;
+
+            rows.forEach(r => {
+                const inputs = r.querySelectorAll('input');
+                const nota = parseFloat(inputs[1].value) || 0;
+                const creditos = parseFloat(inputs[2].value) || 0;
+                sumaPonderada += nota * creditos;
+                totalCreditos += creditos;
+            });
+
+            if (totalCreditos === 0) {
+                showToast("Introduce créditos válidos.", true);
+                return;
+            }
+
+            const media = (sumaPonderada / totalCreditos).toFixed(2);
+            document.getElementById('media-ponderada-res').textContent = `Media Ponderada Cuatrimestre: ${media} / 10`;
+            showToast("Media ponderada calculada con éxito.");
+        }
+
+        // AI & TFG Assistant Mode
+        function switchAiMode(mode) {
+            const btnTest = document.getElementById('btn-mode-test');
+            const btnTfg = document.getElementById('btn-mode-tfg');
+            const modeTest = document.getElementById('ai-mode-test');
+            const modeTfg = document.getElementById('ai-mode-tfg');
+
+            if (mode === 'test') {
+                btnTest.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-md";
+                btnTfg.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 border border-slate-700 hover:text-white";
+                modeTest.classList.remove('hidden');
+                modeTfg.classList.add('hidden');
+                document.getElementById('output-title-label').textContent = "Resultados del Test IA";
+            } else {
+                btnTfg.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-md";
+                btnTest.className = "py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 border border-slate-700 hover:text-white";
+                modeTfg.classList.remove('hidden');
+                modeTest.classList.add('hidden');
+                document.getElementById('output-title-label').textContent = "Asistente Avanzado TFG";
+            }
+        }
+
+        function generarTestIA() {
+            const notes = document.getElementById('ia-notes-input').value.trim();
+            if (!notes) {
+                showToast("Introduce apuntes para generar el test.", true);
+                return;
+            }
+
+            const container = document.getElementById('ai-output-container');
+            container.innerHTML = '<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-cyan-400 mb-2"></i><p class="text-xs">Generando preguntas y soluciones...</p></div>';
+
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-700 space-y-2">
+                            <p class="font-bold text-white text-xs">Pregunta 1: ¿Cómo se divide principalmente el aprendizaje automático según el texto?</p>
+                            <div class="space-y-1.5 text-[11px]">
+                                <div class="p-2 rounded bg-slate-800 text-slate-300">A) Solo en redes neuronales profundas</div>
+                                <div class="p-2 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 font-semibold">B) En aprendizaje supervisado, no supervisado y por refuerzo (Correcta)</div>
+                                <div class="p-2 rounded bg-slate-800 text-slate-300">C) Únicamente en regresión lineal</div>
+                            </div>
+                            <p class="text-[11px] text-cyan-400 mt-1"><strong>Explicación:</strong> El texto indica explícitamente estas tres vertientes fundamentales.</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-700 space-y-2">
+                            <p class="font-bold text-white text-xs">Pregunta 2: ¿Qué tareas engloba típicamente el aprendizaje supervisado?</p>
+                            <div class="space-y-1.5 text-[11px]">
+                                <div class="p-2 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 font-semibold">A) Clasificación y regresión con etiquetas conocidas (Correcta)</div>
+                                <div class="p-2 rounded bg-slate-800 text-slate-300">B) Agrupamiento sin supervisión (Clustering)</div>
+                                <div class="p-2 rounded bg-slate-800 text-slate-300">C) Procesamiento de vídeo sin etiquetar</div>
+                            </div>
+                            <p class="text-[11px] text-cyan-400 mt-1"><strong>Explicación:</strong> Se entrena con etiquetas conocidas previamente.</p>
+                        </div>
+                    </div>
+                `;
+                showToast("¡Test de autoevaluación generado con éxito!");
+            }, 800);
+        }
+
+        function generarTfgEstructura() {
+            const titulo = document.getElementById('tfg-title-input').value;
+            const container = document.getElementById('ai-output-container');
+            container.innerHTML = `
+                <div class="space-y-3 p-4 rounded-xl bg-slate-900 border border-slate-700">
+                    <h4 class="font-bold text-white text-sm border-b border-slate-800 pb-2">📋 Estructura de Capítulos para TFG</h4>
+                    <p class="text-cyan-400 italic text-[11px]">Tema: "${titulo}"</p>
+                    <ul class="space-y-2 text-slate-300 text-[11px]">
+                        <li><strong>1. Introducción y Objetivos:</strong> Justificación del problema, motivación y metas principales.</li>
+                        <li><strong>2. Estado del Arte:</strong> Revisión bibliográfica, antecedentes y tecnologías actuales.</li>
+                        <li><strong>3. Metodología y Diseño:</strong> Enfoque de investigación, recopilación de datos y arquitectura.</li>
+                        <li><strong>4. Implementación y Pruebas:</strong> Desarrollo práctico, experimentación y validación.</li>
+                        <li><strong>5. Resultados y Discusión:</strong> Análisis de métricas, gráficos comparativos y evaluación crítica.</li>
+                        <li><strong>6. Conclusiones y Futuras Líneas:</strong> Resumen de aportaciones y posibles ampliaciones del proyecto.</li>
+                    </ul>
+                </div>
+            `;
+            showToast("Estructura de TFG generada correctamente.");
+        }
+
+        function generarTfgMetodologia() {
+            const container = document.getElementById('ai-output-container');
+            container.innerHTML = `
+                <div class="space-y-3 p-4 rounded-xl bg-slate-900 border border-slate-700">
+                    <h4 class="font-bold text-white text-sm border-b border-slate-800 pb-2">🔬 Metodología y Técnicas Recomendadas</h4>
+                    <p class="text-slate-300 text-[11px] leading-relaxed">
+                        Para este tipo de trabajos se recomienda seguir un enfoque cuantitativo / experimental basado en CRISP-DM o Agile Research:
+                    </p>
+                    <div class="space-y-2 text-[11px]">
+                        <div class="p-2.5 rounded bg-slate-800/80"><strong class="text-white">Fase 1 - Adquisición:</strong> Limpieza y preprocesamiento de datos (Missing values, Normalización).</div>
+                        <div class="p-2.5 rounded bg-slate-800/80"><strong class="text-white">Fase 2 - Modelado:</strong> Comparativa de modelos baseline vs algoritmos avanzados (Random Forest, XGBoost).</div>
+                        <div class="p-2.5 rounded bg-slate-800/80"><strong class="text-white">Fase 3 - Validación:</strong> Validación cruzada (K-Fold) y métricas de rendimiento (Accuracy, F1-Score, ROC-AUC).</div>
+                    </div>
+                </div>
+            `;
+            showToast("Metodología generada con éxito.");
+        }
+
+        function generarTfgDefensa() {
+            const container = document.getElementById('ai-output-container');
+            container.innerHTML = `
+                <div class="space-y-3 p-4 rounded-xl bg-slate-900 border border-slate-700">
+                    <h4 class="font-bold text-white text-sm border-b border-slate-800 pb-2">🎯 Preguntas Típicas del Tribunal de TFG</h4>
+                    <div class="space-y-2.5 text-[11px]">
+                        <div class="p-2.5 rounded bg-slate-800 border border-slate-700">
+                            <p class="font-bold text-white">1. ¿Cuál es la principal aportación diferencial de tu trabajo frente a soluciones existentes?</p>
+                            <p class="text-cyan-400 mt-1"><em>Consejo de defensa:</em> Enfócate en la optimización obtenida y la aplicabilidad directa en el sector real.</p>
+                        </div>
+                        <div class="p-2.5 rounded bg-slate-800 border border-slate-700">
+                            <p class="font-bold text-white">2. ¿Qué limitaciones presenta tu metodología ante conjuntos de datos mayores?</p>
+                            <p class="text-cyan-400 mt-1"><em>Consejo de defensa:</em> Reconoce los cuellos de botella de escalabilidad y menciona cómo se resolverían con computación distribuida.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showToast("Preguntas de defensa generadas.");
+        }
+
+        function generarTfgCronograma() {
+            const container = document.getElementById('ai-output-container');
+            container.innerHTML = `
+                <div class="space-y-3 p-4 rounded-xl bg-slate-900 border border-slate-700">
+                    <h4 class="font-bold text-white text-sm border-b border-slate-800 pb-2">📅 Cronograma Temporal Sugerido (4 Meses)</h4>
+                    <div class="space-y-2 text-[11px] text-slate-300">
+                        <div class="flex justify-between p-2 rounded bg-slate-800"><span>Mes 1: Investigación y Estado del Arte</span><span class="text-cyan-400 font-bold">25%</span></div>
+                        <div class="flex justify-between p-2 rounded bg-slate-800"><span>Mes 2: Diseño de la Solución y Recopilación</span><span class="text-cyan-400 font-bold">50%</span></div>
+                        <div class="flex justify-between p-2 rounded bg-slate-800"><span>Mes 3: Implementación y Pruebas Prácticas</span><span class="text-cyan-400 font-bold">85%</span></div>
+                        <div class="flex justify-between p-2 rounded bg-slate-800"><span>Mes 4: Redacción de Memoria y Defensa</span><span class="text-emerald-400 font-bold">100%</span></div>
+                    </div>
+                </div>
+            `;
+            showToast("Cronograma generado correctamente.");
+        }
+
+        function copiarResultado() {
+            const container = document.getElementById('ai-output-container');
+            const text = container.innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast("Contenido copiado al portapapeles.");
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            calcularEbau();
+            calcularUniFinal();
+        };
+    </script>
+</body>
+</html>
